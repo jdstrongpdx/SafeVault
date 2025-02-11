@@ -55,9 +55,23 @@ builder.Services.AddScoped<JwtService>();
 
 var app = builder.Build();
 
+// app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+// Only allow application/json data and reject all other types
+app.Use(async (context, next) =>
+{
+    if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+        await context.Response.WriteAsync("Unsupported Content-Type. Only application/json is allowed.");
+        return;
+    }
+    await next();
+});
+

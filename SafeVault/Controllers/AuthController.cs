@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using SafeVault.Models;
 using SafeVault.DTO;
 using SafeVault.Services;
+using SafeVault.Utilities;
 
 namespace SafeVault.Controllers;
 
@@ -42,44 +43,59 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        // Create a new user instance
+        if (!ValidationHelpers.IsValidInput(model.Username) || 
+            !ValidationHelpers.IsValidInput(model.Email, ".@")) // Allows dots and '@' in emails
+        {
+            return BadRequest("Invalid characters detected in input.");
+        }
+
+        // Prevent XSS attacks
+        if (!ValidationHelpers.IsValidXssInput(model.Username) || 
+            !ValidationHelpers.IsValidXssInput(model.Email))
+        {
+            return BadRequest("Input contains potentially malicious content.");
+        }
+
         var user = new ApplicationUser
         {
             UserName = model.Username,
             Email = model.Email
         };
 
-        // Hash the password before storing the user
         user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
-
         var result = await _userManager.CreateAsync(user);
 
-        if (!result.Succeeded) return BadRequest(result.Errors);
-        
-        // Assign default role of User
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
         await _userManager.AddToRoleAsync(user, "User");
 
         return Ok("User registered successfully.");
     }
 
-    // Login and issue JWT
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        if (!ValidationHelpers.IsValidInput(model.Username) || 
+            !ValidationHelpers.IsValidXssInput(model.Username))
+        {
+            return BadRequest("Invalid input provided.");
+        }
+
         var user = await _userManager.FindByNameAsync(model.Username);
         if (user == null) return Unauthorized("Invalid username or password.");
 
-        // Verify the password using the PasswordHasher
         var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
         if (passwordVerificationResult != PasswordVerificationResult.Success)
             return Unauthorized("Invalid username or password.");
 
-        // Generate JWT token
         var token = _jwtService.GenerateToken(model.Username);
 
         return Ok(new { Token = token });
-
     }
+
 
     // Logout (for session clearing, if needed)
     [Authorize]
