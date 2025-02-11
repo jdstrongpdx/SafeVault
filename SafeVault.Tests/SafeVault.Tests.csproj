@@ -32,8 +32,4 @@
     <ProjectReference Include="..\SafeVault\SafeVault.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Auth\" />
-  </ItemGroup>
-
 </Project>

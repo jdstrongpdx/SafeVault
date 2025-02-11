@@ -1,10 +1,6 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using SafeVault.Models;
 using SafeVault.DTO;
 using SafeVault.Services;
@@ -43,13 +39,14 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
+        // Validate allowed characters in input fields
         if (!ValidationHelpers.IsValidInput(model.Username) || 
-            !ValidationHelpers.IsValidInput(model.Email, ".@")) // Allows dots and '@' in emails
+            !ValidationHelpers.IsValidInput(model.Email, ".@"))
         {
             return BadRequest("Invalid characters detected in input.");
         }
 
-        // Prevent XSS attacks
+        // Validate XSS-specific attack patterns in user input fields
         if (!ValidationHelpers.IsValidXssInput(model.Username) || 
             !ValidationHelpers.IsValidXssInput(model.Email))
         {
@@ -62,6 +59,7 @@ public class AuthController : ControllerBase
             Email = model.Email
         };
 
+        // Ensure secure password hashing (with salting)
         user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
         var result = await _userManager.CreateAsync(user);
 
@@ -95,7 +93,6 @@ public class AuthController : ControllerBase
 
         return Ok(new { Token = token });
     }
-
 
     // Logout (for session clearing, if needed)
     [Authorize]

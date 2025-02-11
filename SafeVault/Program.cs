@@ -42,7 +42,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 // Add Authorization Policies
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
@@ -52,8 +51,10 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddControllers();
 builder.Services.AddScoped<JwtService>();
 
-
 var app = builder.Build();
+
+// Use the custom security middleware
+app.UseMiddleware<SecurityMiddleware>();
 
 // app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -62,16 +63,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-// Only allow application/json data and reject all other types
-app.Use(async (context, next) =>
-{
-    if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
-    {
-        context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-        await context.Response.WriteAsync("Unsupported Content-Type. Only application/json is allowed.");
-        return;
-    }
-    await next();
-});
 

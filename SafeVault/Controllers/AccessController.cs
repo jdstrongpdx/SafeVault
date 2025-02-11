@@ -9,21 +9,21 @@ public class AccessController : ControllerBase
 {
     [HttpGet("admin")]
     [Authorize(Policy = "AdminPolicy")]
-    public IActionResult GetAdminValues()
+    public IActionResult GetAdminData()
     {
         return Ok("This data is accessible to Admins only.");
     }
 
     [HttpGet("user")]
     [Authorize(Policy = "UserPolicy")]
-    public IActionResult GetUserValues()
+    public IActionResult GetUserData()
     {
         return Ok("This data is accessible to Users only.");
     }
 
     [HttpGet("guest")]
     [Authorize(Policy = "GuestPolicy")]
-    public IActionResult GetGuestValues()
+    public IActionResult GetGuestData()
     {
         return Ok("This data is accessible to Guests.");
     }
