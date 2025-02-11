@@ -1,0 +1,41 @@
+# Ignore build-related folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Logs
+*.log
+
+# Environment and configuration files
+*.env
+.appsettings.*
+
+# Ignore entire appsettings files (regardless of extension)
+appsettings.json
+appsettings.*.json
+
+# The following generated and temp files should also be ignored:
+wwwroot/lib/
+wwwroot/dist/
+node_modules/
+
+# Visual Studio files
+.vscode/
+.vs/
+.idea/
+
+# Rider specific
+.idea/
+*.sln.iml
+
+# System files
+.DS_Store
+Thumbs.db
+
+# OS generated files
+*.swp
